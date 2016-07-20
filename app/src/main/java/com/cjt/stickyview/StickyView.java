@@ -1,15 +1,23 @@
 package com.cjt.stickyview;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.FloatEvaluator;
+import android.animation.TypeEvaluator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Point;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.BounceInterpolator;
+import android.view.animation.OvershootInterpolator;
 
 /**
  * 作者: 陈嘉桐 on 2016/7/13
@@ -26,6 +34,8 @@ public class StickyView extends View {
     private static int VIEW_BREAK_STATUS = 3;
     //当前状态
     private int VIEW_STATUS = VIEW_ACTION_STATUS;
+
+    private boolean isAnim = false;
 
     private final AccelerateInterpolator aInterpolator = new AccelerateInterpolator(1);
 
@@ -77,18 +87,19 @@ public class StickyView extends View {
         super.onDraw(canvas);
         //移动时候的状态
         if (VIEW_STATUS == VIEW_ACTIOMOVE_STATUS) {
-            Log.i("CJT","=========拖动状态=========");
+            Log.i("CJT", "=========拖动状态=========");
             float length_temp = (float) Math.sqrt(((Math.abs(moveX - centerX) * Math.abs(moveX - centerX)) + (Math.abs(moveY - centerY) * Math.abs(moveY - centerY))));
             float radius_temp;
-            if (radius <= length_temp) {
-                radius_temp = (radius / length_temp) * radius;
-            } else {
-                radius_temp = radius;
-            }
+//                if (radius <= length_temp) {
+//                    radius_temp = (radius / length_temp) * radius;
+//                } else {
+//                    radius_temp = radius/2;
+//                }
+            radius_temp = radius / 2 < (radius / length_temp) * radius ? radius / 2 : (radius / length_temp) * radius;
             canvas.drawCircle(centerX, centerY, radius_temp, mPaint);
             canvas.drawCircle(moveX, moveY, radius, mPaint);
             canvas.drawLine(centerX, centerY, moveX, moveY, mPaint);
-            if (radius_temp / radius < 0.2) {
+            if (radius_temp / radius < 0.15) {
                 Log.i("CJT", "半径比=" + radius_temp / radius);
                 VIEW_STATUS = VIEW_BREAK_STATUS;
             }
@@ -99,15 +110,15 @@ public class StickyView extends View {
 
             float lengthX = Math.abs(moveX - x);
             float lengthY = Math.abs(y - moveY);
-//            if (moveX < centerX && moveY < centerY) {
-//                canvas.drawLine(moveX - lengthX, moveY + lengthY, moveX + lengthX, moveY - lengthY, mPaint);
-//            } else if (moveX > centerX && moveY < centerY) {
-//                canvas.drawLine(moveX - lengthX, moveY - lengthY, moveX + lengthX, moveY + lengthY, mPaint);
-//            } else if (moveX > centerX && moveY > centerY) {
-//                canvas.drawLine(moveX - lengthX, moveY + lengthY, moveX + lengthX, moveY - lengthY, mPaint);
-//            } else if (moveX < centerX && moveY > centerY) {
-//                canvas.drawLine(moveX - lengthX, moveY - lengthY, moveX + lengthX, moveY + lengthY, mPaint);
-//            }
+            //            if (moveX < centerX && moveY < centerY) {
+            //                canvas.drawLine(moveX - lengthX, moveY + lengthY, moveX + lengthX, moveY - lengthY, mPaint);
+            //            } else if (moveX > centerX && moveY < centerY) {
+            //                canvas.drawLine(moveX - lengthX, moveY - lengthY, moveX + lengthX, moveY + lengthY, mPaint);
+            //            } else if (moveX > centerX && moveY > centerY) {
+            //                canvas.drawLine(moveX - lengthX, moveY + lengthY, moveX + lengthX, moveY - lengthY, mPaint);
+            //            } else if (moveX < centerX && moveY > centerY) {
+            //                canvas.drawLine(moveX - lengthX, moveY - lengthY, moveX + lengthX, moveY + lengthY, mPaint);
+            //            }
 
 
             float sx, sy;
@@ -131,8 +142,8 @@ public class StickyView extends View {
             }
 
             if (moveX < centerX && moveY < centerY) {
-//                canvas.drawLine(moveX - lengthX, moveY + lengthY, centerX - lengthsX, centerY + lengthsY, mPaint);
-//                canvas.drawLine(moveX + lengthX, moveY - lengthY, centerX + lengthsX, centerY - lengthsY, mPaint);
+                //                canvas.drawLine(moveX - lengthX, moveY + lengthY, centerX - lengthsX, centerY + lengthsY, mPaint);
+                //                canvas.drawLine(moveX + lengthX, moveY - lengthY, centerX + lengthsX, centerY - lengthsY, mPaint);
 
                 mPath.reset();
                 mPath.moveTo(moveX - lengthX, moveY + lengthY);
@@ -142,14 +153,14 @@ public class StickyView extends View {
                 mPath.lineTo(moveX - lengthX, moveY + lengthY);
                 mPath.close();
                 mPath.setFillType(Path.FillType.WINDING);
-//                mPaint.setStyle(Paint.Style.FILL);
+                //                mPaint.setStyle(Paint.Style.FILL);
                 canvas.drawPath(mPath, mPaint);
-//                mPaint.setStyle(Paint.Style.STROKE);
+                //                mPaint.setStyle(Paint.Style.STROKE);
 
 
             } else if (moveX > centerX && moveY < centerY) {
-//                canvas.drawLine(moveX - lengthX, moveY - lengthY, centerX - lengthsX, centerY - lengthsY, mPaint);
-//                canvas.drawLine(moveX + lengthX, moveY + lengthY, centerX + lengthsX, centerY + lengthsY, mPaint);
+                //                canvas.drawLine(moveX - lengthX, moveY - lengthY, centerX - lengthsX, centerY - lengthsY, mPaint);
+                //                canvas.drawLine(moveX + lengthX, moveY + lengthY, centerX + lengthsX, centerY + lengthsY, mPaint);
 
                 mPath.reset();
                 mPath.moveTo(moveX - lengthX, moveY - lengthY);
@@ -160,8 +171,8 @@ public class StickyView extends View {
                 canvas.drawPath(mPath, mPaint);
 
             } else if (moveX > centerX && moveY > centerY) {
-//                canvas.drawLine(moveX - lengthX, moveY + lengthY, centerX - lengthsX, centerY + lengthsY, mPaint);
-//                canvas.drawLine(moveX + lengthX, moveY - lengthY, centerX + lengthsX, centerY - lengthsY, mPaint);
+                //                canvas.drawLine(moveX - lengthX, moveY + lengthY, centerX - lengthsX, centerY + lengthsY, mPaint);
+                //                canvas.drawLine(moveX + lengthX, moveY - lengthY, centerX + lengthsX, centerY - lengthsY, mPaint);
 
                 mPath.reset();
                 mPath.moveTo(moveX - lengthX, moveY + lengthY);
@@ -171,8 +182,8 @@ public class StickyView extends View {
                 mPath.lineTo(moveX - lengthX, moveY + lengthY);
                 canvas.drawPath(mPath, mPaint);
             } else if (moveX < centerX && moveY > centerY) {
-//                canvas.drawLine(moveX - lengthX, moveY - lengthY, centerX - lengthsX, centerY - lengthsY, mPaint);
-//                canvas.drawLine(moveX + lengthX, moveY + lengthY, centerX + lengthsX, centerY + lengthsY, mPaint);
+                //                canvas.drawLine(moveX - lengthX, moveY - lengthY, centerX - lengthsX, centerY - lengthsY, mPaint);
+                //                canvas.drawLine(moveX + lengthX, moveY + lengthY, centerX + lengthsX, centerY + lengthsY, mPaint);
                 mPath.reset();
                 mPath.moveTo(moveX - lengthX, moveY - lengthY);
                 mPath.quadTo((moveX + centerX) / 2, (moveY + centerY) / 2, centerX - lengthsX, centerY - lengthsY);
@@ -181,12 +192,13 @@ public class StickyView extends View {
                 mPath.lineTo(moveX - lengthX, moveY - lengthY);
                 canvas.drawPath(mPath, mPaint);
             }
+
 //            canvas.drawText("99+", moveX, moveY, textPaint);
         } else if (VIEW_STATUS == VIEW_BREAK_STATUS) {//断开时候的状态
-            Log.i("CJT","=========断开状态=========");
+            Log.i("CJT", "=========断开状态=========");
             canvas.drawCircle(moveX, moveY, radius, mPaint);
         } else if (VIEW_STATUS == VIEW_ACTION_STATUS) {//初始状态
-            Log.i("CJT","=========初始状态=========");
+            Log.i("CJT", "=========初始状态=========");
             canvas.drawCircle(centerX, centerY, radius, mPaint);
 //            canvas.drawText("99+", centerX, centerY, textPaint);
         }
@@ -196,12 +208,16 @@ public class StickyView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                this.VIEW_STATUS = VIEW_ACTIONDOWN_STATUS;
-                moveX = event.getX();
-                moveY = event.getY();
+                if (!isAnim) {
+                    moveX = event.getX();
+                    moveY = event.getY();
+                    if (moveX >= centerX - radius && moveX <= centerX + radius && moveY >= centerY - radius && centerX <= centerY + radius) {
+                        this.VIEW_STATUS = VIEW_ACTIONDOWN_STATUS;
+                    }
+                }
                 return true;
             case MotionEvent.ACTION_MOVE:
-                if (VIEW_STATUS==VIEW_ACTIONDOWN_STATUS) {
+                if (VIEW_STATUS == VIEW_ACTIONDOWN_STATUS) {
                     this.VIEW_STATUS = VIEW_ACTIOMOVE_STATUS;
                 }
 //                Log.i("CJT", "X=" + moveX + " Y=" + moveY);
@@ -211,10 +227,18 @@ public class StickyView extends View {
                 invalidate();
                 return true;
             case MotionEvent.ACTION_UP:
-                this.VIEW_STATUS = VIEW_ACTION_STATUS;
-                isMove = false;
                 moveX = event.getX();
                 moveY = event.getY();
+                if (this.VIEW_STATUS == VIEW_ACTIOMOVE_STATUS) {
+                    if (!isAnim) {
+                        isAnim = true;
+                        Log.i("CJT", "移动时候松开");
+                        startAnimation((int) moveX, (int) moveY);
+                    }
+                } else if (this.VIEW_STATUS == VIEW_BREAK_STATUS) {
+                    this.VIEW_STATUS = VIEW_ACTION_STATUS;
+                    isMove = false;
+                }
                 invalidate();
                 return true;
         }
@@ -229,5 +253,67 @@ public class StickyView extends View {
     public void setRadius(int radius) {
         this.radius = radius;
         invalidate();
+    }
+
+    private void startAnimation(int temp_moveX, int temp_moveY) {
+        Point startPoint = new Point(temp_moveX, temp_moveY);
+        Point endPoint = new Point((int) centerX, (int) centerY);
+        ValueAnimator anim = ValueAnimator.ofObject(new PointEvaluator(), startPoint, endPoint);
+        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                Point point = (Point) animation.getAnimatedValue();
+                moveX = point.getX();
+                moveY = point.getY();
+                Log.i("CJT", moveX + "   ====   " + moveY);
+                invalidate();
+            }
+        });
+        anim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                isAnim = false;
+                VIEW_STATUS = VIEW_ACTION_STATUS;
+                invalidate();
+            }
+        });
+        anim.setInterpolator(new SpringInterpolator());
+        anim.setDuration(1000);
+        anim.start();
+    }
+
+    public class PointEvaluator implements TypeEvaluator {
+
+        @Override
+        public Object evaluate(float fraction, Object startValue, Object endValue) {
+            Point startPoint = (Point) startValue;
+            Point endPoint = (Point) endValue;
+            float x = startPoint.getX() + fraction * (endPoint.getX() - startPoint.getX());
+            float y = startPoint.getY() + fraction * (endPoint.getY() - startPoint.getY());
+            Point point = new Point(x, y);
+            return point;
+        }
+
+    }
+
+    public class Point {
+
+        private float x;
+
+        private float y;
+
+        public Point(float x, float y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        public float getX() {
+            return x;
+        }
+
+        public float getY() {
+            return y;
+        }
+
     }
 }
